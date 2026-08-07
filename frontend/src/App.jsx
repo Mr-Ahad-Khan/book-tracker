@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchBooks, createBook, updateBook, deleteBook } from "./api.js";
+import {
+  fetchBooks,
+  createBook,
+  updateBook,
+  deleteBook,
+  fetchSettings,
+  updateSettings,
+} from "./api.js";
 import BookList from "./components/BookList.jsx";
 import BookForm from "./components/BookForm.jsx";
 import FilterBar from "./components/FilterBar.jsx";
@@ -14,6 +21,28 @@ export default function App() {
   const [filter, setFilter] = useState({ genre: "All", status: "All", search: "" });
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    fetchSettings()
+      .then(({ theme: savedTheme }) => setTheme(savedTheme))
+      .catch(() => setError("Failed to load your display preference"));
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  const toggleTheme = async () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    try {
+      await updateSettings({ theme: nextTheme });
+    } catch (e) {
+      setTheme(theme);
+      setError(e.message);
+    }
+  };
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
@@ -97,9 +126,21 @@ export default function App() {
               <p className="tagline">Your personal reading journey</p>
             </div>
           </div>
-          <button className="btn btn-primary" onClick={openNew}>
-            + Add Book
-          </button>
+          <div className="header-actions">
+            <button
+              className="theme-toggle"
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            >
+              <span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span>
+              <span>{theme === "light" ? "Dark" : "Light"}</span>
+            </button>
+            <button className="btn btn-primary" onClick={openNew}>
+              + Add Book
+            </button>
+          </div>
         </div>
       </header>
 
