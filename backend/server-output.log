@@ -1,6 +1,1 @@
-Failed running 'server.js'. Waiting for file changes before restarting...
-Restarting 'server.js'
-Backend API running on http://localhost:3000
-Restarting 'server.js'
-Backend API running on http://localhost:3000
-Failed running 'server.js'. Waiting for file changes before restarting...
+Book Tracker running on port 3000

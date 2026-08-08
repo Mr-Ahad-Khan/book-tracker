@@ -15,6 +15,7 @@ A full-stack personal library app for keeping track of books you plan to read, a
 
 - **Frontend:** React 18 and Vite
 - **Backend:** Node.js and Express
+- **Database:** MySQL 8 (managed through MySQL Workbench)
 
 ## Run Locally
 
@@ -22,6 +23,7 @@ A full-stack personal library app for keeping track of books you plan to read, a
 
 - Node.js 18 or later
 - npm
+- MySQL Server 8 and MySQL Workbench
 
 ### 1. Install dependencies
 
@@ -33,7 +35,23 @@ cd ../frontend
 npm install
 ```
 
-### 2. Start the backend
+### 2. Create the MySQL database
+
+1. Open MySQL Workbench and select your MySQL connection. If you do not have
+   one, create it with your server hostname, port (usually `3306`), username,
+   and password.
+2. Click **File → Open SQL Script**, select
+   [`backend/schema.sql`](backend/schema.sql), then click the lightning-bolt
+   **Execute** button. This creates the `book_tracker` database, its tables,
+   and the default settings row.
+3. In the left **Schemas** panel, click refresh. Expand `book_tracker` to see
+   `books` and `settings`.
+4. Copy `backend/.env.example` to `backend/.env` and enter the same host,
+   port, user, password, and database name used in Workbench.
+
+Do not commit the `.env` file.
+
+### 3. Start the backend
 
 From the `backend` directory:
 
@@ -43,7 +61,7 @@ npm run dev
 
 The API runs at `http://localhost:3000`.
 
-### 3. Start the frontend
+### 4. Start the frontend
 
 In a second terminal, from the `frontend` directory:
 
@@ -81,7 +99,22 @@ Open `http://localhost:5173` in your browser. Vite proxies `/api` requests to th
 
 ## Data Storage
 
-The backend starts with a few sample books. Books and theme settings are stored in memory, so changes reset when the backend server restarts.
+Books and display settings are stored persistently in MySQL. MySQL Workbench can
+be used to create, inspect, and edit the `book_tracker` database.
+
+## Deploy to Netlify
+
+1. Push this repository to GitHub, GitLab, or Bitbucket, then in Netlify choose
+   **Add new project → Import an existing project**.
+2. Select the repository and set its **base directory** to `backend`. The included
+   `backend/netlify.toml` sets the build command,
+   publish directory, API redirects, and serverless function directory.
+3. In **Site configuration → Environment variables**, add `DB_HOST`, `DB_PORT`,
+   `DB_USER`, `DB_PASSWORD`, and `DB_NAME` (and `DB_SSL=true` if required). Use a hosted MySQL database that
+   accepts connections from Netlify; a MySQL server running only on your laptop
+   cannot be reached by Netlify.
+4. Deploy. Netlify serves the React site and maps `/api/*` to the included
+   serverless API function.
 
 ## Available Scripts
 
