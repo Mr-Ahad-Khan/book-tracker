@@ -1,49 +1,27 @@
-import { randomUUID } from "crypto";
+import { pool } from "../db.js";
 
-const books = [
-  {
-    id: "seed-1",
-    title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    genre: "Fiction",
-    status: "Read",
-    rating: 5,
-    notes: "A masterpiece of American literature.",
-    createdAt: Date.now() - 50000,
-  },
-  {
-    id: "seed-2",
-    title: "Dune",
-    author: "Frank Herbert",
-    genre: "Sci-Fi",
-    status: "Reading",
-    rating: 4,
-    notes: "Epic world-building.",
-    createdAt: Date.now() - 40000,
-  },
-  {
-    id: "seed-3",
-    title: "Atomic Habits",
-    author: "James Clear",
-    genre: "Non-Fiction",
-    status: "To Read",
-    rating: 0,
-    notes: "",
-    createdAt: Date.now() - 30000,
-  },
-];
+const BOOK_COLUMNS = `
+  id, title, author, genre, status, rating, notes, created_at AS createdAt
+`;
 
-export function getAllBooks() {
-  return [...books].sort((a, b) => b.createdAt - a.createdAt);
+export async function getAllBooks() {
+  const [books] = await pool.query(
+    `SELECT ${BOOK_COLUMNS} FROM books ORDER BY created_at DESC`
+  );
+  return books;
 }
 
-export function getBookById(id) {
-  return books.find((b) => b.id === id);
+export async function getBookById(id) {
+  const [books] = await pool.execute(
+    `SELECT ${BOOK_COLUMNS} FROM books WHERE id = ?`,
+    [id]
+  );
+  return books[0] ?? null;
 }
 
-export function createBook(data) {
+export async function createBook(data) {
   const book = {
-    id: randomUUID(),
+    id: crypto.randomUUID(),
     title: data.title,
     author: data.author,
     genre: data.genre || "Fiction",
@@ -52,29 +30,28 @@ export function createBook(data) {
     notes: data.notes || "",
     createdAt: Date.now(),
   };
-  books.push(book);
+
+  await pool.execute(
+    `INSERT INTO books (id, title, author, genre, status, rating, notes, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [book.id, book.title, book.author, book.genre, book.status, book.rating, book.notes, book.createdAt]
+  );
   return book;
 }
 
-export function updateBook(id, updates) {
-  const book = books.find((b) => b.id === id);
-  if (!book) return null;
-  Object.assign(book, {
-    title: updates.title ?? book.title,
-    author: updates.author ?? book.author,
-    genre: updates.genre ?? book.genre,
-    status: updates.status ?? book.status,
-    rating: updates.rating ?? book.rating,
-    notes: updates.notes ?? book.notes,
-  });
-  return book;
+export async function updateBook(id, updates) {
+  const fields = ["title", "author", "genre", "status", "rating", "notes"];
+  const changed = fields.filter((field) => updates[field] !== undefined);
+  if (changed.length) {
+    await pool.execute(
+      `UPDATE books SET ${changed.map((field) => `${field} = ?`).join(", ")} WHERE id = ?`,
+      [...changed.map((field) => updates[field]), id]
+    );
+  }
+  return getBookById(id);
 }
 
-export function deleteBook(id) {
-  const idx = books.findIndex((b) => b.id === id);
-  if (idx === -1) return false;
-  books.splice(idx, 1);
-  return true;
+export async function deleteBook(id) {
+  const [result] = await pool.execute("DELETE FROM books WHERE id = ?", [id]);
+  return result.affectedRows > 0;
 }
-
-export const Book = { getAllBooks, getBookById, createBook, updateBook, deleteBook };

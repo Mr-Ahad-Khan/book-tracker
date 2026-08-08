@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { Book, getAllBooks, getBookById, createBook, updateBook, deleteBook } from "../models/Book.js";
+import { getAllBooks, getBookById, createBook, updateBook, deleteBook } from "../models/Book.js";
 
 const router = Router();
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res, next) => {
+  try {
   const { genre, status, search } = req.query;
-  let books = getAllBooks();
+  let books = await getAllBooks();
 
   if (genre && genre !== "All") {
     books = books.filter((b) => b.genre === genre);
@@ -23,20 +24,24 @@ router.get("/", (req, res) => {
   }
 
   res.json(books);
+  } catch (error) { next(error); }
 });
 
-router.get("/:id", (req, res) => {
-  const book = getBookById(req.params.id);
+router.get("/:id", async (req, res, next) => {
+  try {
+  const book = await getBookById(req.params.id);
   if (!book) return res.status(404).json({ error: "Book not found" });
   res.json(book);
+  } catch (error) { next(error); }
 });
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res, next) => {
+  try {
   const { title, author, genre, status, rating, notes } = req.body;
   if (!title || !author) {
     return res.status(400).json({ error: "Title and author are required" });
   }
-  const book = createBook({
+  const book = await createBook({
     title,
     author,
     genre: genre || "Fiction",
@@ -45,18 +50,23 @@ router.post("/", (req, res) => {
     notes: notes || "",
   });
   res.status(201).json(book);
+  } catch (error) { next(error); }
 });
 
-router.put("/:id", (req, res) => {
-  const updated = updateBook(req.params.id, req.body);
+router.put("/:id", async (req, res, next) => {
+  try {
+  const updated = await updateBook(req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: "Book not found" });
   res.json(updated);
+  } catch (error) { next(error); }
 });
 
-router.delete("/:id", (req, res) => {
-  const deleted = deleteBook(req.params.id);
+router.delete("/:id", async (req, res, next) => {
+  try {
+  const deleted = await deleteBook(req.params.id);
   if (!deleted) return res.status(404).json({ error: "Book not found" });
   res.json({ message: "Book deleted" });
+  } catch (error) { next(error); }
 });
 
 export default router;

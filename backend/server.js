@@ -1,21 +1,24 @@
 import express from "express";
-import cors from "cors";
-import booksRouter from "./routes/books.js";
-import settingsRouter from "./routes/settings.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import { app, verifyConnection } from "./app.js";
 
-const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3000);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const frontendDist = path.resolve(__dirname, "../frontend/dist");
 
-app.use(cors());
-app.use(express.json());
-
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+app.use(express.static(frontendDist));
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/")) return next();
+  res.sendFile(path.join(frontendDist, "index.html"));
 });
 
-app.use("/api/books", booksRouter);
-app.use("/api/settings", settingsRouter);
+async function start() {
+  await verifyConnection();
+  app.listen(PORT, () => console.log(`Book Tracker running on port ${PORT}`));
+}
 
-app.listen(PORT, () => {
-  console.log(`Backend API running on http://localhost:${PORT}`);
+start().catch((error) => {
+  console.error("Unable to connect to MySQL:", error.message);
+  process.exit(1);
 });
