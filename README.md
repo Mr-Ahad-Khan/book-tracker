@@ -106,9 +106,9 @@ be used to create, inspect, and edit the `book_tracker` database.
 
 1. Push this repository to GitHub, GitLab, or Bitbucket, then in Netlify choose
    **Add new project → Import an existing project**.
-2. Select the repository and set its **base directory** to `backend`. The included
-   `backend/netlify.toml` sets the build command,
-   publish directory, API redirects, and serverless function directory.
+2. Select the repository. Leave the **base directory** blank: the root
+   `netlify.toml` configures the build command, publish directory, API
+   redirects, SPA fallback, and serverless function directory.
 3. In **Site configuration → Environment variables**, add `DB_HOST`, `DB_PORT`,
    `DB_USER`, `DB_PASSWORD`, and `DB_NAME` (and `DB_SSL=true` if required). Use a hosted MySQL database that
    accepts connections from Netlify; a MySQL server running only on your laptop
