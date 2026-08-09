@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "init-db": "node init-db.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

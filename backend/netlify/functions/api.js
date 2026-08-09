@@ -19,7 +19,7 @@ export async function handler(event, context) {
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Database connection failed" }),
+      body: JSON.stringify({ error: "Database configuration or connection failed" }),
     };
   }
 }

@@ -4,9 +4,9 @@ import mysql from "mysql2/promise";
 const required = ["DB_HOST", "DB_USER", "DB_NAME"];
 const missing = required.filter((name) => !process.env[name]);
 
-if (missing.length) {
-  throw new Error(`Missing required database environment variables: ${missing.join(", ")}`);
-}
+export const databaseConfigurationError = missing.length
+  ? `Missing required database environment variables: ${missing.join(", ")}`
+  : null;
 
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -20,5 +20,8 @@ export const pool = mysql.createPool({
 });
 
 export async function verifyDatabaseConnection() {
+  if (databaseConfigurationError) {
+    throw new Error(databaseConfigurationError);
+  }
   await pool.query("SELECT 1");
 }
