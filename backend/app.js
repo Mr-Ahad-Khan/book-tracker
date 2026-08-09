@@ -13,8 +13,12 @@ app.get(["/api/health", "/health"], (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use(["/api/books", "/books"], booksRouter);
-app.use(["/api/settings", "/settings"], settingsRouter);
+// Handles ES module default export wrappers in Netlify serverless builds
+const books = booksRouter.default || booksRouter;
+const settings = settingsRouter.default || settingsRouter;
+
+app.use(["/api/books", "/books"], books);
+app.use(["/api/settings", "/settings"], settings);
 
 app.use((error, req, res, next) => {
   console.error(error);
